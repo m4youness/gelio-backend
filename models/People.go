@@ -3,12 +3,12 @@ package models
 import "time"
 
 type Person struct {
-	person_id     int
-	first_name    string
-	last_name     string
-	gender_id     int
-	phone_number  string
-	email         string
-	date_of_birth time.Time
-	country_id    int
+	PersonID    int       `db:"person_id"`
+	FirstName   string    `db:"first_name"`
+	LastName    string    `db:"last_name"`
+	GenderID    int       `db:"gender_id"`
+	PhoneNumber string    `db:"phone_number"`
+	Email       string    `db:"email"`
+	DateOfBirth time.Time `db:"date_of_birth"`
+	CountryID   int       `db:"country_id"`
 }
