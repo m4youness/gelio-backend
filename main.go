@@ -6,6 +6,7 @@ import (
 	"gelio/m/middleware"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/cors"
 )
 
 func init() {
@@ -16,9 +17,24 @@ func init() {
 func main() {
 
 	r := gin.Default()
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:4200"},
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowCredentials: true,
+	})
 
-	r.POST("/Login", controllers.Login)
-	r.GET("/IsLoggedIn", middleware.RequireAuth, controllers.IsLoggedIn)
-	r.POST("SignUp", controllers.SignUp)
+	r.Use(corsHandler(c))
+	r.POST("/User", controllers.SignUp)
+	r.POST("/SignIn", controllers.Login)
+	r.GET("/IsAuthenticated", middleware.RequireAuth, controllers.IsLoggedIn)
+	r.GET("/Logout", middleware.RequireAuth, controllers.Logout)
+	r.POST("/Person", controllers.AddPerson)
 	r.Run()
+}
+
+func corsHandler(corsMiddleware *cors.Cors) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		corsMiddleware.HandlerFunc(c.Writer, c.Request)
+		c.Next()
+	}
 }

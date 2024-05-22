@@ -51,7 +51,7 @@ func Login(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("Authorization", tokenstring, 3600*24*30, "", "", false, true)
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.JSON(http.StatusOK, gin.H{"Successful": true})
 
 }
 
@@ -65,12 +65,12 @@ func IsLoggedIn(c *gin.Context) {
 
 func SignUp(c *gin.Context) {
 	var body struct {
-		UserName     string `json:"UserName"`
-		Password     string `json:"Password"`
-		CreatedDate  string `json:"CreatedDate"`
-		IsActive     bool   `json:"IsActive"`
-		ProfileImage string `json:"ProfileImage"`
-		PersonID     int    `json:"PersonID"`
+		UserName     string
+		Password     string
+		CreatedDate  string
+		IsActive     bool
+		ProfileImage string
+		PersonID     int
 	}
 	Error := c.Bind(&body)
 
@@ -97,8 +97,12 @@ func SignUp(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"UserID": userID,
-	},
-	)
+	c.JSON(200, userID)
+}
+
+func Logout(c *gin.Context) {
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("Authorization", "", -1, "", "", false, true)
+
+	c.JSON(http.StatusOK, gin.H{"LoggedOut": true})
 }
