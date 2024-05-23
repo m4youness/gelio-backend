@@ -24,10 +24,11 @@ func main() {
 	})
 
 	r.Use(corsHandler(c))
-	r.POST("/SignUp", controllers.SignUp)
+	r.POST("/User", controllers.SignUp)
 	r.POST("/SignIn", controllers.Login)
 	r.GET("/IsAuthenticated", middleware.RequireAuth, controllers.IsLoggedIn)
 	r.GET("/Logout", middleware.RequireAuth, controllers.Logout)
+	r.POST("/Person", controllers.AddPerson)
 	r.Run()
 }
 

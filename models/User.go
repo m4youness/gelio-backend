@@ -8,6 +8,6 @@ type User struct {
 	Password     string    `db:"password"`
 	CreatedDate  time.Time `db:"created_date"`
 	IsActive     bool      `db:"is_active"`
-	ProfileImage *string   `db:"profile_image"`
+	ProfileImage string    `db:"profile_image"`
 	PersonID     int       `db:"person_id"`
 }
