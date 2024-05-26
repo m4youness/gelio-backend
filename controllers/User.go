@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"gelio/m/initializers"
 	"gelio/m/models"
-	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Login(c *gin.Context) {
@@ -26,7 +27,7 @@ func Login(c *gin.Context) {
 	err := initializers.DB.Get(&User, "select * from users where username = $1", body.Username)
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return
 	}
 
@@ -57,10 +58,7 @@ func Login(c *gin.Context) {
 
 func IsLoggedIn(c *gin.Context) {
 
-	c.JSON(200, gin.H{
-		"Authorized": true,
-	},
-	)
+	c.JSON(200, true)
 }
 
 func SignUp(c *gin.Context) {
@@ -105,4 +103,85 @@ func Logout(c *gin.Context) {
 	c.SetCookie("Authorization", "", -1, "", "", false, true)
 
 	c.JSON(http.StatusOK, gin.H{"LoggedOut": true})
+}
+
+func GetUserId(c *gin.Context) {
+	tokenstring, err := c.Cookie("Authorization")
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	}
+
+	token, err := jwt.Parse(tokenstring, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(os.Getenv("SECRET")), nil
+	})
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+
+		if float64(time.Now().Unix()) > claims["exp"].(float64) {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+
+		var user models.User
+
+		initializers.DB.Get(&user, "select * from users where user_id = $1", claims["sub"])
+
+		if user.UserID == 0 {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+
+		c.JSON(200, user.UserID)
+
+	} else {
+		c.AbortWithStatus(http.StatusUnauthorized)
+
+	}
+
+}
+
+func GetUser(c *gin.Context) {
+	id := c.Param("id")
+
+	var user models.User
+
+	err := initializers.DB.Get(&user, "select * from users where user_id = $1", id)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	c.JSON(200, user)
+}
+
+func DoesUserExist(c *gin.Context) {
+	var body struct {
+		UserName string
+	}
+
+	err := c.Bind(&body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var user models.User
+
+	Err := initializers.DB.Get(&user, "select user_id from users where username = $1", body.UserName)
+
+	if Err != nil {
+		c.JSON(200, false)
+		return
+	}
+
+	c.JSON(200, true)
+
 }

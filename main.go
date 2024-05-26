@@ -29,7 +29,11 @@ func main() {
 	r.GET("/IsAuthenticated", middleware.RequireAuth, controllers.IsLoggedIn)
 	r.GET("/Logout", middleware.RequireAuth, controllers.Logout)
 	r.POST("/Person", controllers.AddPerson)
+	r.GET("/UserId", controllers.GetUserId)
+	r.GET("/User/:id", controllers.GetUser)
+	r.POST("/User/Exists", controllers.DoesUserExist)
 	r.Run()
+
 }
 
 func corsHandler(corsMiddleware *cors.Cors) gin.HandlerFunc {
