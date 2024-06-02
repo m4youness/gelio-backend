@@ -3,6 +3,8 @@ package controllers
 import (
 	"fmt"
 	"gelio/m/initializers"
+	"gelio/m/models"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,8 +32,28 @@ func AddPerson(c *gin.Context) {
 	res.Scan(&person_id)
 
 	if person_id == 0 {
+		fmt.Println(res.Err())
 		fmt.Println("Err inserting data in the db")
 	}
 
 	c.JSON(200, person_id)
+}
+
+func GetPerson(c *gin.Context) {
+	id := c.Param("id")
+
+	var Person models.Person
+
+	err := initializers.DB.Get(&Person, "select * from People where person_id = $1", id)
+
+	dateParts := strings.Split(Person.DateOfBirth, "T")
+	Person.DateOfBirth = dateParts[0]
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	c.JSON(200, Person)
+
 }

@@ -32,6 +32,12 @@ func main() {
 	r.GET("/UserId", controllers.GetUserId)
 	r.GET("/User/:id", controllers.GetUser)
 	r.POST("/User/Exists", controllers.DoesUserExist)
+	r.GET("/Person/:id", controllers.GetPerson)
+	r.GET("/Countries", controllers.GetAllCountries)
+	r.POST("/GetCountryWithName", controllers.GetCountryIdWithName)
+	r.GET("/Country/:id", controllers.GetCountryNameWithId)
+	r.POST("/Image", controllers.AddImage)
+	r.GET("/LoadMessages/:id", controllers.LoadMessages)
 	r.Run()
 
 }

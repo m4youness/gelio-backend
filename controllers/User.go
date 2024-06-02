@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"gelio/m/initializers"
 	"gelio/m/models"
-	"log"
-	"net/http"
-	"os"
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
+	"os"
+	"time"
 )
 
 func Login(c *gin.Context) {
@@ -28,6 +26,7 @@ func Login(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
+		c.JSON(http.StatusOK, false)
 		return
 	}
 
@@ -35,6 +34,7 @@ func Login(c *gin.Context) {
 
 	if Err != nil {
 		fmt.Println(Err)
+		c.JSON(http.StatusOK, false)
 		return
 	}
 
@@ -46,13 +46,15 @@ func Login(c *gin.Context) {
 	tokenstring, err := token.SignedString([]byte(os.Getenv("SECRET")))
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		c.JSON(http.StatusOK, false)
+		return
 	}
 
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("Authorization", tokenstring, 3600*24*30, "", "", false, true)
 
-	c.JSON(http.StatusOK, gin.H{"Successful": true})
+	c.JSON(http.StatusOK, true)
 
 }
 
@@ -63,12 +65,12 @@ func IsLoggedIn(c *gin.Context) {
 
 func SignUp(c *gin.Context) {
 	var body struct {
-		UserName     string
-		Password     string
-		CreatedDate  string
-		IsActive     bool
-		ProfileImage string
-		PersonID     int
+		UserName       string
+		Password       string
+		CreatedDate    string
+		IsActive       bool
+		ProfileImageId int
+		PersonID       int
 	}
 	Error := c.Bind(&body)
 
@@ -84,8 +86,8 @@ func SignUp(c *gin.Context) {
 		return
 	}
 
-	Res := initializers.DB.QueryRow("insert into users (username, password, created_date, is_active, profile_image, person_id) values ($1, $2, $3, $4, $5, $6) RETURNING user_id",
-		body.UserName, hash, body.CreatedDate, body.IsActive, body.ProfileImage, body.PersonID)
+	Res := initializers.DB.QueryRow("insert into users (username, password, created_date, is_active, profile_image_id, person_id) values ($1, $2, $3, $4, $5, $6) RETURNING user_id",
+		body.UserName, hash, body.CreatedDate, body.IsActive, body.ProfileImageId, body.PersonID)
 
 	var userID int
 	Err := Res.Scan(&userID)
@@ -156,6 +158,7 @@ func GetUser(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
+		c.JSON(http.StatusNotFound, nil)
 		return
 	}
 

@@ -1,7 +1,7 @@
 package models
 
 type Country struct {
-	country_id   int
-	country_name string
-	iso3         string
+	CountryID   int     `db:"country_id"`
+	CountryName string  `db:"country_name"`
+	Iso3        *string `db:"iso3"`
 }
