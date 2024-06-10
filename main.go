@@ -50,6 +50,7 @@ func main() {
 	r.POST("/LoadMessages", controllers.LoadMessages)
 	r.GET("/MessageInfo/:id", controllers.GetMessageInfoFromId)
 	r.POST("/Message", controllers.SendMessage)
+	r.POST("/Contact", controllers.AddContact)
 
 	r.Run()
 
