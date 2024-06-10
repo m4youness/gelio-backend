@@ -15,14 +15,12 @@ func LoadContacts(c *gin.Context) {
 
 	err := initializers.DB.Select(&Users,
 		`SELECT user_id, username, password, created_date, is_active, person_id, profile_image_id 
-     FROM Message
-     INNER JOIN users ON users.user_id = Message.receiver_id 
-     WHERE sender_id = $1
-     UNION 
-     SELECT user_id, username, password, created_date, is_active, person_id, profile_image_id 
-     FROM Message
-     INNER JOIN users ON users.user_id = Message.sender_id 
-     WHERE receiver_id = $1`, id)
+      FROM Message
+      INNER JOIN users ON users.user_id = Message.sender_id 
+      WHERE receiver_id = $1
+      UNION
+      SELECT users.user_id, username, password, created_date, is_active, person_id, profile_image_id FROM followers 
+      INNER JOIN users on users.user_id = followers.user_id WHERE followers.follower_id = $1`, id)
 
 	if err != nil {
 		fmt.Println(err)
@@ -113,4 +111,38 @@ func SendMessage(c *gin.Context) {
 	}
 
 	c.JSON(200, MessageId)
+}
+
+func AddContact(c *gin.Context) {
+	var body struct {
+		Username string
+		UserId   int
+	}
+
+	if err := c.Bind(&body); err != nil {
+		fmt.Println(err)
+		c.JSON(400, nil)
+		return
+	}
+
+	var User models.User
+
+	err := initializers.DB.Get(&User, "select * from users where username = $1", body.Username)
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(400, nil)
+		return
+	}
+
+	_, Err := initializers.DB.Exec("insert into followers (user_id, follower_id) values ($1, $2)", User.UserID, body.UserId)
+
+	if Err != nil {
+		fmt.Println(Err)
+		c.JSON(400, nil)
+		return
+	}
+
+	c.JSON(200, true)
+
 }
