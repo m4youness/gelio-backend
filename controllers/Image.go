@@ -1,6 +1,7 @@
 package controllers
 
 import (
+<<<<<<< HEAD
 	"gelio/m/initializers"
 	"github.com/cloudinary/cloudinary-go/api/uploader"
 	"github.com/gin-gonic/gin"
@@ -31,4 +32,35 @@ func UploadImage(c *gin.Context) {
 
 	// Respond with the secure URL
 	c.JSON(http.StatusOK, gin.H{"url": uploadResult.SecureURL})
+=======
+	"fmt"
+	"gelio/m/initializers"
+	"github.com/gin-gonic/gin"
+)
+
+func AddImage(c *gin.Context) {
+	var body struct {
+		ImageName string
+		ImagePath string
+	}
+
+	if err := c.Bind(&body); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var ImageId int
+
+	res := initializers.DB.QueryRow("insert into image (imagename, imagedata) values ($1, $2) returning imageid", body.ImageName, body.ImagePath)
+
+	res.Scan(&ImageId)
+
+	if ImageId == 0 {
+		fmt.Println(res.Err())
+		return
+	}
+
+	c.JSON(200, ImageId)
+
+>>>>>>> c74ed8c47bbcad1fb2db51e22715763bdb190b65
 }
