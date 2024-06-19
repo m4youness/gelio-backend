@@ -46,7 +46,7 @@ func LoadMessages(c *gin.Context) {
 
 	var Messages []models.Message
 
-	err := initializers.DB.Select(&Messages, `select message_id, sender_id, receiver_id, Message.message_info_id from Message 
+	err := initializers.DB.Select(&Messages, `select message_id, sender_id, receiver_id, message, sent_date from Message 
     inner join message_info on message_info.message_info_id = Message.message_info_id
     where receiver_id = $1 and sender_id = $2 or receiver_id = $2 and sender_id = $1
     order by sent_date asc`, body.ReceiverId, body.SenderId)
@@ -60,22 +60,6 @@ func LoadMessages(c *gin.Context) {
 	c.JSON(200, Messages)
 
 }
-
-func GetMessageInfoFromId(c *gin.Context) {
-	id := c.Param("id")
-
-	var MessageInfo models.MessageInfo
-
-	err := initializers.DB.Get(&MessageInfo, "select * from Message_Info where message_info_id = $1", id)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(400, nil)
-		return
-	}
-
-	c.JSON(200, MessageInfo)
-}
-
 func SendMessage(c *gin.Context) {
 	var body struct {
 		SenderId   int
@@ -121,7 +105,7 @@ func AddContact(c *gin.Context) {
 
 	if err := c.Bind(&body); err != nil {
 		fmt.Println(err)
-		c.JSON(400, nil)
+		c.JSON(400, false)
 		return
 	}
 
@@ -131,7 +115,16 @@ func AddContact(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		c.JSON(400, nil)
+		c.JSON(404, false)
+		return
+	}
+
+	var Follower models.Follower
+
+	Error := initializers.DB.Get(&Follower, "select * from followers where user_id = $1 and follower_id = $2", User.UserID, body.UserId)
+
+	if Error == nil {
+		c.JSON(409, false)
 		return
 	}
 
@@ -139,8 +132,33 @@ func AddContact(c *gin.Context) {
 
 	if Err != nil {
 		fmt.Println(Err)
-		c.JSON(400, nil)
+		c.JSON(500, false)
 		return
+	}
+
+	c.JSON(201, true)
+
+}
+
+func IsPersonNotContact(c *gin.Context) {
+	var body struct {
+		Username string
+		UserId   int
+	}
+
+	if err := c.Bind(&body); err != nil {
+		fmt.Println(err)
+		c.JSON(400, false)
+		return
+	}
+
+	var User models.User
+
+	err := initializers.DB.Get(&User, "select * from users where username = $1", body.Username)
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(404, false)
 	}
 
 	c.JSON(200, true)

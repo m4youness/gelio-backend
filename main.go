@@ -12,6 +12,7 @@ import (
 func init() {
 	initializers.LoadEnvVariables()
 	initializers.DbConnect()
+	initializers.CloudinaryConnect()
 }
 
 func main() {
@@ -29,28 +30,28 @@ func main() {
 	r.POST("/SignIn", controllers.Login)
 	r.GET("/IsAuthenticated", middleware.RequireAuth, controllers.IsLoggedIn)
 	r.GET("/Logout", middleware.RequireAuth, controllers.Logout)
-	r.GET("/User/:id", controllers.GetUser)
+	r.GET("/User/:id", middleware.RequireAuth, controllers.GetUser)
 	r.POST("/User/Exists", controllers.DoesUserExist)
-	r.GET("/UserId", controllers.GetUserId)
+	r.GET("/UserId", middleware.RequireAuth, controllers.GetUserId)
 
 	// People
 	r.POST("/Person", controllers.AddPerson)
-	r.GET("/Person/:id", controllers.GetPerson)
+	r.GET("/Person/:id", middleware.RequireAuth, controllers.GetPerson)
 
 	// Country
 	r.GET("/Countries", controllers.GetAllCountries)
 	r.POST("/GetCountryWithName", controllers.GetCountryIdWithName)
-	r.GET("/Country/:id", controllers.GetCountryNameWithId)
+	r.GET("/Country/:id", middleware.RequireAuth, controllers.GetCountryNameWithId)
 
 	// Image
-	r.POST("/Image", controllers.AddImage)
+	r.POST("/Image", middleware.RequireAuth, controllers.UploadImage)
 
 	// Message
-	r.GET("/LoadContacts/:id", controllers.LoadContacts)
-	r.POST("/LoadMessages", controllers.LoadMessages)
-	r.GET("/MessageInfo/:id", controllers.GetMessageInfoFromId)
-	r.POST("/Message", controllers.SendMessage)
-	r.POST("/Contact", controllers.AddContact)
+	r.GET("/LoadContacts/:id", middleware.RequireAuth, controllers.LoadContacts)
+	r.POST("/LoadMessages", middleware.RequireAuth, controllers.LoadMessages)
+	r.POST("/Message", middleware.RequireAuth, controllers.SendMessage)
+	r.POST("/Contact", middleware.RequireAuth, controllers.AddContact)
+	r.POST("/ContactExist", middleware.RequireAuth, controllers.IsPersonNotContact)
 
 	r.Run()
 
