@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"gelio/m/initializers"
 	"gelio/m/models"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -60,6 +59,6 @@ func GetCountryNameWithId(c *gin.Context) {
 		c.JSON(400, nil)
 		return
 	}
-	fmt.Println(Country.CountryName)
+
 	c.JSON(200, Country.CountryName)
 }

@@ -18,6 +18,4 @@ func CloudinaryConnect() {
 		return
 	}
 
-	fmt.Println("Cloudinary Connected")
-
 }
