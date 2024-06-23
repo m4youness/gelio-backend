@@ -58,11 +58,6 @@ func Login(c *gin.Context) {
 
 }
 
-func IsLoggedIn(c *gin.Context) {
-
-	c.JSON(200, true)
-}
-
 func SignUp(c *gin.Context) {
 	var body struct {
 		UserName       string
@@ -186,5 +181,38 @@ func DoesUserExist(c *gin.Context) {
 	}
 
 	c.JSON(200, true)
+
+}
+
+func MakeUserInActive(c *gin.Context) {
+	id := c.Param("id")
+
+	fmt.Println(id)
+
+	_, err := initializers.DB.Exec("update users set is_active = false where user_id = $1", id)
+
+	if err != nil {
+		c.JSON(404, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, true)
+
+}
+
+func UserActivity(c *gin.Context) {
+	username := c.Param("username")
+
+	var User models.User
+
+	err := initializers.DB.Get(&User, "select * from users where username = $1", username)
+
+	// error means he is logged in
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	// user is not logged in
+	c.JSON(200, User.IsActive)
 
 }

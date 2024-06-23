@@ -46,11 +46,7 @@ func LoadMessages(c *gin.Context) {
 
 	var Messages []models.Message
 
-<<<<<<< HEAD
 	err := initializers.DB.Select(&Messages, `select message_id, sender_id, receiver_id, message, sent_date from Message 
-=======
-	err := initializers.DB.Select(&Messages, `select message_id, sender_id, receiver_id, Message.message_info_id from Message 
->>>>>>> c74ed8c47bbcad1fb2db51e22715763bdb190b65
     inner join message_info on message_info.message_info_id = Message.message_info_id
     where receiver_id = $1 and sender_id = $2 or receiver_id = $2 and sender_id = $1
     order by sent_date asc`, body.ReceiverId, body.SenderId)
@@ -64,8 +60,6 @@ func LoadMessages(c *gin.Context) {
 	c.JSON(200, Messages)
 
 }
-<<<<<<< HEAD
-=======
 
 func GetMessageInfoFromId(c *gin.Context) {
 	id := c.Param("id")
@@ -82,7 +76,6 @@ func GetMessageInfoFromId(c *gin.Context) {
 	c.JSON(200, MessageInfo)
 }
 
->>>>>>> c74ed8c47bbcad1fb2db51e22715763bdb190b65
 func SendMessage(c *gin.Context) {
 	var body struct {
 		SenderId   int
@@ -128,11 +121,7 @@ func AddContact(c *gin.Context) {
 
 	if err := c.Bind(&body); err != nil {
 		fmt.Println(err)
-<<<<<<< HEAD
 		c.JSON(400, false)
-=======
-		c.JSON(400, nil)
->>>>>>> c74ed8c47bbcad1fb2db51e22715763bdb190b65
 		return
 	}
 
@@ -142,7 +131,6 @@ func AddContact(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-<<<<<<< HEAD
 		c.JSON(404, false)
 		return
 	}
@@ -153,17 +141,12 @@ func AddContact(c *gin.Context) {
 
 	if Error == nil {
 		c.JSON(409, false)
-=======
-		c.JSON(400, nil)
->>>>>>> c74ed8c47bbcad1fb2db51e22715763bdb190b65
 		return
 	}
 
 	_, Err := initializers.DB.Exec("insert into followers (user_id, follower_id) values ($1, $2)", User.UserID, body.UserId)
 
 	if Err != nil {
-		fmt.Println(Err)
-<<<<<<< HEAD
 		c.JSON(500, false)
 		return
 	}
@@ -193,12 +176,6 @@ func IsPersonNotContact(c *gin.Context) {
 		c.JSON(404, false)
 	}
 
-=======
-		c.JSON(400, nil)
-		return
-	}
-
->>>>>>> c74ed8c47bbcad1fb2db51e22715763bdb190b65
 	c.JSON(200, true)
 
 }
