@@ -1,7 +1,6 @@
 package models
 
-var Image struct {
-	ImageId   int    `db:"imageid"`
-	ImageName string `db:"imagename"`
-	ImagePath string `db:"imagedata"`
+type Image struct {
+	ImageId int    `db:"image_id"`
+	Url     string `db:"url"`
 }
