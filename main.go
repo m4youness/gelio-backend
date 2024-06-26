@@ -45,7 +45,8 @@ func main() {
 	r.GET("/Country/:id", middleware.RequireAuth, controllers.GetCountryNameWithId)
 
 	// Image
-	r.POST("/Image", middleware.RequireAuth, controllers.UploadImage)
+	r.POST("/Image", controllers.UploadImage)
+	r.GET("/Image/:id", middleware.RequireAuth, controllers.FindImage)
 
 	// Message
 	r.GET("/LoadContacts/:id", middleware.RequireAuth, controllers.LoadContacts)

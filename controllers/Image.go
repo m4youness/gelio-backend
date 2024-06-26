@@ -28,6 +28,7 @@ func UploadImage(c *gin.Context) {
 	uploadResult, err := initializers.CloudinaryClient.Upload.Upload(c, file, uploader.UploadParams{
 		PublicID: fileHeader.Filename,
 	})
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary error: " + err.Error()})
 		return
