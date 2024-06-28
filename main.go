@@ -49,11 +49,20 @@ func main() {
 	r.GET("/Image/:id", middleware.RequireAuth, controllers.FindImage)
 
 	// Message
-	r.GET("/LoadContacts/:id", middleware.RequireAuth, controllers.LoadContacts)
+	r.GET("/Contacts/:id", middleware.RequireAuth, controllers.LoadContacts)
 	r.POST("/LoadMessages", middleware.RequireAuth, controllers.LoadMessages)
 	r.POST("/Message", middleware.RequireAuth, controllers.SendMessage)
 	r.POST("/Contact", middleware.RequireAuth, controllers.AddContact)
 	r.POST("/ContactExist", middleware.RequireAuth, controllers.IsPersonNotContact)
+
+	// Post
+	r.GET("/Posts/:id", middleware.RequireAuth, controllers.GetPosts)
+
+	// Post Likes
+	r.POST("/Post/Like", middleware.RequireAuth, controllers.AddLike)
+	r.POST("/Like/Delete", middleware.RequireAuth, controllers.RemoveLike)
+	r.POST("/Is/Post/Liked", middleware.RequireAuth, controllers.IsPostLiked)
+	r.GET("/Likes/:id", middleware.RequireAuth, controllers.GetAmountOfLikes)
 
 	r.Run()
 

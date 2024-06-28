@@ -1,7 +1,7 @@
 package models
 
 type User struct {
-	UserID         int    `db:"user_id"`
+	UserId         int    `db:"user_id"`
 	Username       string `db:"username"`
 	Password       string `db:"password"`
 	CreatedDate    string `db:"created_date"`

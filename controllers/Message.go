@@ -137,14 +137,14 @@ func AddContact(c *gin.Context) {
 
 	var Follower models.Follower
 
-	Error := initializers.DB.Get(&Follower, "select * from followers where user_id = $1 and follower_id = $2", User.UserID, body.UserId)
+	Error := initializers.DB.Get(&Follower, "select * from followers where user_id = $1 and follower_id = $2", User.UserId, body.UserId)
 
 	if Error == nil {
 		c.JSON(409, false)
 		return
 	}
 
-	_, Err := initializers.DB.Exec("insert into followers (user_id, follower_id) values ($1, $2)", User.UserID, body.UserId)
+	_, Err := initializers.DB.Exec("insert into followers (user_id, follower_id) values ($1, $2)", User.UserId, body.UserId)
 
 	if Err != nil {
 		c.JSON(500, false)

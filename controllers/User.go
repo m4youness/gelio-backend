@@ -39,7 +39,7 @@ func Login(c *gin.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": User.UserID,
+		"sub": User.UserId,
 		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
 
@@ -131,11 +131,11 @@ func GetUserId(c *gin.Context) {
 
 		initializers.DB.Get(&user, "select * from users where user_id = $1", claims["sub"])
 
-		if user.UserID == 0 {
+		if user.UserId == 0 {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 
-		c.JSON(200, user.UserID)
+		c.JSON(200, user.UserId)
 
 	} else {
 		c.AbortWithStatus(http.StatusUnauthorized)

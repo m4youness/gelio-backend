@@ -40,7 +40,7 @@ func RequireAuth(c *gin.Context) {
 
 		var user models.User
 		err := initializers.DB.Get(&user, "SELECT * FROM users WHERE user_id = $1", claims["sub"])
-		if err != nil || user.UserID == 0 {
+		if err != nil || user.UserId == 0 {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
