@@ -12,6 +12,7 @@ var DB *sqlx.DB
 
 func DbConnect() {
 	var Err error
+
 	dsn := os.Getenv("DB_URL")
 	DB, Err = sqlx.Connect("postgres", dsn)
 
@@ -22,4 +23,3 @@ func DbConnect() {
 	}
 
 }
-
