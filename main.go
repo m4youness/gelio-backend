@@ -57,6 +57,7 @@ func main() {
 
 	// Post
 	r.GET("/Posts/:id", middleware.RequireAuth, controllers.GetPosts)
+	r.POST("/Post", middleware.RequireAuth, controllers.UploadPost)
 
 	// Post Likes
 	r.POST("/Post/Like", middleware.RequireAuth, controllers.AddLike)

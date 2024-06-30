@@ -82,6 +82,10 @@ func GetAmountOfLikes(c *gin.Context) {
 	err := initializers.DB.Get(&AmountOfLikes, "select count(*) as post_likes from post_likes group by post_id having post_id = $1", id)
 
 	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			c.JSON(200, 0)
+			return
+		}
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
