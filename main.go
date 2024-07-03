@@ -65,6 +65,10 @@ func main() {
 	r.POST("/Is/Post/Liked", middleware.RequireAuth, controllers.IsPostLiked)
 	r.GET("/Likes/:id", middleware.RequireAuth, controllers.GetAmountOfLikes)
 
+	// Comments
+	r.GET("/Comments/:id", middleware.RequireAuth, controllers.GetComments)
+	r.POST("/Comment", middleware.RequireAuth, controllers.AddComment)
+
 	r.Run()
 
 }
