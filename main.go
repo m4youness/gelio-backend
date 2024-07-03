@@ -4,7 +4,6 @@ import (
 	"gelio/m/controllers"
 	"gelio/m/initializers"
 	"gelio/m/middleware"
-	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
