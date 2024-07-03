@@ -4,6 +4,8 @@ import (
 	"gelio/m/controllers"
 	"gelio/m/initializers"
 	"gelio/m/middleware"
+	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/cors"
@@ -69,7 +71,13 @@ func main() {
 	r.GET("/Comments/:id", middleware.RequireAuth, controllers.GetComments)
 	r.POST("/Comment", middleware.RequireAuth, controllers.AddComment)
 
-	r.Run()
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "3000"
+	}
+
+	r.Run("0.0.0.0:" + port)
 
 }
 
