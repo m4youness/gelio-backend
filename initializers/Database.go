@@ -1,7 +1,6 @@
 package initializers
 
 import (
-	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"log"
@@ -17,9 +16,7 @@ func DbConnect() {
 	DB, Err = sqlx.Connect("postgres", dsn)
 
 	if Err != nil {
-		fmt.Println("Could not connect to database")
 		log.Fatal(Err)
-
+		return
 	}
-
 }

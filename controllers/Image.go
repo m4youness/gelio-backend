@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"gelio/m/initializers"
+	"gelio/m/middleware"
 	"gelio/m/models"
 	"net/http"
 
@@ -9,7 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UploadImage(c *gin.Context) {
+type Image struct{}
+
+func ImageController() *Image {
+	return &Image{}
+}
+
+func (Image) UploadImage(c *gin.Context) {
 	fileHeader, err := c.FormFile("image")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "File error: " + err.Error()})
@@ -47,7 +54,7 @@ func UploadImage(c *gin.Context) {
 
 }
 
-func FindImage(c *gin.Context) {
+func (Image) FindImage(c *gin.Context) {
 	id := c.Param("id")
 
 	var Image models.Image
@@ -61,4 +68,9 @@ func FindImage(c *gin.Context) {
 
 	c.JSON(200, Image)
 
+}
+
+func (i *Image) InitializeRoutes(r *gin.Engine) {
+	r.POST("/Image", i.UploadImage)
+	r.GET("/Image/:id", middleware.RequireAuth, i.FindImage)
 }

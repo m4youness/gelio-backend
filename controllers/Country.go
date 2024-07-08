@@ -3,11 +3,19 @@ package controllers
 import (
 	"fmt"
 	"gelio/m/initializers"
+	"gelio/m/middleware"
 	"gelio/m/models"
+
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllCountries(c *gin.Context) {
+type Country struct{}
+
+func CountryController() *Country {
+	return &Country{}
+}
+
+func (Country) GetAllCountries(c *gin.Context) {
 
 	var Countries []models.Country
 
@@ -24,7 +32,7 @@ func GetAllCountries(c *gin.Context) {
 
 }
 
-func GetCountryIdWithName(c *gin.Context) {
+func (Country) GetCountryIdWithName(c *gin.Context) {
 	var body struct {
 		CountryName string
 	}
@@ -48,7 +56,7 @@ func GetCountryIdWithName(c *gin.Context) {
 	c.JSON(200, Country.CountryID)
 }
 
-func GetCountryNameWithId(c *gin.Context) {
+func (Country) GetCountryNameWithId(c *gin.Context) {
 	id := c.Param("id")
 
 	var Country models.Country
@@ -61,4 +69,10 @@ func GetCountryNameWithId(c *gin.Context) {
 	}
 
 	c.JSON(200, Country.CountryName)
+}
+
+func (c *Country) InitializeRoutes(r *gin.Engine) {
+	r.GET("/Countries", c.GetAllCountries)
+	r.POST("/Get/Country/With/Name", c.GetCountryIdWithName)
+	r.GET("/Country/:id", middleware.RequireAuth, c.GetCountryNameWithId)
 }

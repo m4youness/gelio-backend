@@ -3,12 +3,19 @@ package controllers
 import (
 	"fmt"
 	"gelio/m/initializers"
+	"gelio/m/middleware"
 	"gelio/m/models"
 
 	"github.com/gin-gonic/gin"
 )
 
-func LoadContacts(c *gin.Context) {
+type Message struct{}
+
+func MessageController() *Message {
+	return &Message{}
+}
+
+func (Message) LoadContacts(c *gin.Context) {
 	id := c.Param("id")
 
 	var Users []models.User
@@ -32,7 +39,7 @@ func LoadContacts(c *gin.Context) {
 	c.JSON(200, Users)
 }
 
-func LoadMessages(c *gin.Context) {
+func (Message) LoadMessages(c *gin.Context) {
 	var body struct {
 		SenderId   int
 		ReceiverId int
@@ -61,7 +68,7 @@ func LoadMessages(c *gin.Context) {
 
 }
 
-func GetMessageInfoFromId(c *gin.Context) {
+func (Message) GetMessageInfoFromId(c *gin.Context) {
 	id := c.Param("id")
 
 	var MessageInfo models.MessageInfo
@@ -76,7 +83,7 @@ func GetMessageInfoFromId(c *gin.Context) {
 	c.JSON(200, MessageInfo)
 }
 
-func SendMessage(c *gin.Context) {
+func (Message) SendMessage(c *gin.Context) {
 	var body struct {
 		SenderId   int
 		ReceiverId int
@@ -113,7 +120,7 @@ func SendMessage(c *gin.Context) {
 	c.JSON(200, MessageId)
 }
 
-func AddContact(c *gin.Context) {
+func (Message) AddContact(c *gin.Context) {
 	var body struct {
 		Username string
 		UserId   int
@@ -155,7 +162,7 @@ func AddContact(c *gin.Context) {
 
 }
 
-func IsPersonNotContact(c *gin.Context) {
+func (Message) IsPersonNotContact(c *gin.Context) {
 	var body struct {
 		Username string
 		UserId   int
@@ -178,4 +185,12 @@ func IsPersonNotContact(c *gin.Context) {
 
 	c.JSON(200, true)
 
+}
+
+func (m *Message) InitializeRoutes(r *gin.Engine) {
+	r.GET("/Contacts/:id", middleware.RequireAuth, m.LoadContacts)
+	r.POST("/Load/Messages", middleware.RequireAuth, m.LoadMessages)
+	r.POST("/Message", middleware.RequireAuth, m.SendMessage)
+	r.POST("/Contact", middleware.RequireAuth, m.AddContact)
+	r.POST("/Contact/Exists", middleware.RequireAuth, m.IsPersonNotContact)
 }

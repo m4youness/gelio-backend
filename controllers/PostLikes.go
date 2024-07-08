@@ -2,12 +2,19 @@ package controllers
 
 import (
 	"gelio/m/initializers"
+	"gelio/m/middleware"
 	"gelio/m/models"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AddLike(c *gin.Context) {
+type PostLikes struct{}
+
+func PostLikesController() *PostLikes {
+	return &PostLikes{}
+}
+
+func (PostLikes) AddLike(c *gin.Context) {
 	var body struct {
 		PostId int
 		UserId int
@@ -29,7 +36,7 @@ func AddLike(c *gin.Context) {
 
 }
 
-func RemoveLike(c *gin.Context) {
+func (PostLikes) RemoveLike(c *gin.Context) {
 	var body struct {
 		PostId int
 		UserId int
@@ -51,7 +58,7 @@ func RemoveLike(c *gin.Context) {
 
 }
 
-func IsPostLiked(c *gin.Context) {
+func (PostLikes) IsPostLiked(c *gin.Context) {
 	var body struct {
 		PostId int
 		UserId int
@@ -74,7 +81,7 @@ func IsPostLiked(c *gin.Context) {
 
 }
 
-func GetAmountOfLikes(c *gin.Context) {
+func (PostLikes) GetAmountOfLikes(c *gin.Context) {
 	id := c.Param("id")
 
 	var AmountOfLikes int
@@ -92,4 +99,11 @@ func GetAmountOfLikes(c *gin.Context) {
 
 	c.JSON(200, AmountOfLikes)
 
+}
+
+func (p *PostLikes) InitializeRoutes(r *gin.Engine) {
+	r.POST("/Post/Like", middleware.RequireAuth, p.AddLike)
+	r.POST("/Like/Delete", middleware.RequireAuth, p.RemoveLike)
+	r.POST("/Is/Post/Liked", middleware.RequireAuth, p.IsPostLiked)
+	r.GET("/Likes/:id", middleware.RequireAuth, p.GetAmountOfLikes)
 }

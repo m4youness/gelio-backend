@@ -3,16 +3,14 @@ package main
 import (
 	"gelio/m/controllers"
 	"gelio/m/initializers"
-	"gelio/m/middleware"
-
 	"github.com/gin-gonic/gin"
 	"github.com/rs/cors"
 )
 
 func init() {
 	initializers.LoadEnvVariables()
-	initializers.DbConnect()
 	initializers.CloudinaryConnect()
+	initializers.DbConnect()
 }
 
 func main() {
@@ -23,51 +21,44 @@ func main() {
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowCredentials: true,
 	})
+	r.StaticFile("/test", "./test.html")
 
 	r.Use(corsHandler(c))
 	// User
-	r.POST("/User", controllers.SignUp)
-	r.POST("/SignIn", controllers.Login)
-	r.GET("/Logout", middleware.RequireAuth, controllers.Logout)
-	r.GET("/User/:id", middleware.RequireAuth, controllers.GetUser)
-	r.POST("/User/Exists", controllers.DoesUserExist)
-	r.GET("/UserId", middleware.RequireAuth, controllers.GetUserId)
-	r.GET("/User/InActive/:id", middleware.RequireAuth, controllers.MakeUserInActive)
-	r.GET("/User/IsNotActive/:username", controllers.UserActivity)
+	userController := controllers.UserController()
+	userController.InitializeRoutes(r)
 
 	// People
-	r.POST("/Person", controllers.AddPerson)
-	r.GET("/Person/:id", middleware.RequireAuth, controllers.GetPerson)
+	peopleController := controllers.PeopleController()
+	peopleController.InitializeRoutes(r)
 
 	// Country
-	r.GET("/Countries", controllers.GetAllCountries)
-	r.POST("/GetCountryWithName", controllers.GetCountryIdWithName)
-	r.GET("/Country/:id", middleware.RequireAuth, controllers.GetCountryNameWithId)
+	countryController := controllers.CountryController()
+	countryController.InitializeRoutes(r)
 
 	// Image
-	r.POST("/Image", controllers.UploadImage)
-	r.GET("/Image/:id", middleware.RequireAuth, controllers.FindImage)
+	imageController := controllers.ImageController()
+	imageController.InitializeRoutes(r)
 
 	// Message
-	r.GET("/Contacts/:id", middleware.RequireAuth, controllers.LoadContacts)
-	r.POST("/LoadMessages", middleware.RequireAuth, controllers.LoadMessages)
-	r.POST("/Message", middleware.RequireAuth, controllers.SendMessage)
-	r.POST("/Contact", middleware.RequireAuth, controllers.AddContact)
-	r.POST("/ContactExist", middleware.RequireAuth, controllers.IsPersonNotContact)
+	messageController := controllers.MessageController()
+	messageController.InitializeRoutes(r)
 
 	// Post
-	r.GET("/Posts/:id", middleware.RequireAuth, controllers.GetPosts)
-	r.POST("/Post", middleware.RequireAuth, controllers.UploadPost)
+	postController := controllers.PostController()
+	postController.InitializeRoutes(r)
 
 	// Post Likes
-	r.POST("/Post/Like", middleware.RequireAuth, controllers.AddLike)
-	r.POST("/Like/Delete", middleware.RequireAuth, controllers.RemoveLike)
-	r.POST("/Is/Post/Liked", middleware.RequireAuth, controllers.IsPostLiked)
-	r.GET("/Likes/:id", middleware.RequireAuth, controllers.GetAmountOfLikes)
+	postLikesController := controllers.PostLikesController()
+	postLikesController.InitializeRoutes(r)
 
 	// Comments
-	r.GET("/Comments/:id", middleware.RequireAuth, controllers.GetComments)
-	r.POST("/Comment", middleware.RequireAuth, controllers.AddComment)
+	commentsController := controllers.CommentsController()
+	commentsController.InitializeRoutes(r)
+
+	// Websockets
+	websocketController := controllers.NewServer()
+	websocketController.InitializeRoutes(r)
 
 	r.Run()
 

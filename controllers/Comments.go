@@ -2,12 +2,19 @@ package controllers
 
 import (
 	"gelio/m/initializers"
+	"gelio/m/middleware"
 	"gelio/m/models"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetComments(c *gin.Context) {
+type Comments struct{}
+
+func CommentsController() *Comments {
+	return &Comments{}
+}
+
+func (Comments) GetComments(c *gin.Context) {
 	id := c.Param("id")
 
 	var Comments []models.Comments
@@ -23,7 +30,7 @@ func GetComments(c *gin.Context) {
 
 }
 
-func AddComment(c *gin.Context) {
+func (Comments) AddComment(c *gin.Context) {
 	var body struct {
 		PostId      int
 		UserId      int
@@ -44,4 +51,9 @@ func AddComment(c *gin.Context) {
 	}
 
 	c.JSON(200, true)
+}
+
+func (c *Comments) InitializeRoutes(r *gin.Engine) {
+	r.GET("/Comments/:id", middleware.RequireAuth, c.GetComments)
+	r.POST("/Comment", middleware.RequireAuth, c.AddComment)
 }

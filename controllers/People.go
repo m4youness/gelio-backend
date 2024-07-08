@@ -3,13 +3,20 @@ package controllers
 import (
 	"fmt"
 	"gelio/m/initializers"
+	"gelio/m/middleware"
 	"gelio/m/models"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AddPerson(c *gin.Context) {
+type Person struct{}
+
+func PeopleController() *Person {
+	return &Person{}
+}
+
+func (Person) AddPerson(c *gin.Context) {
 	var body struct {
 		FirstName   string
 		LastName    string
@@ -39,7 +46,7 @@ func AddPerson(c *gin.Context) {
 	c.JSON(200, person_id)
 }
 
-func GetPerson(c *gin.Context) {
+func (Person) GetPerson(c *gin.Context) {
 	id := c.Param("id")
 
 	var Person models.Person
@@ -56,4 +63,9 @@ func GetPerson(c *gin.Context) {
 
 	c.JSON(200, Person)
 
+}
+
+func (p *Person) InitializeRoutes(r *gin.Engine) {
+	r.POST("/Person", p.AddPerson)
+	r.GET("/Person/:id", middleware.RequireAuth, p.GetPerson)
 }

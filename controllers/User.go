@@ -2,17 +2,26 @@ package controllers
 
 import (
 	"fmt"
+	util "gelio/m/Util"
 	"gelio/m/initializers"
+	"gelio/m/middleware"
 	"gelio/m/models"
-	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
-func Login(c *gin.Context) {
+type User struct{}
+
+func UserController() *User {
+	return &User{}
+}
+
+func (User) SignIn(c *gin.Context) {
 	var body struct {
 		Username string
 		Password string
@@ -38,27 +47,27 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": User.UserId,
-		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
-	})
-
-	tokenstring, err := token.SignedString([]byte(os.Getenv("SECRET")))
-
+	accessToken, err := util.CreateAccessToken(User.UserId)
 	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusOK, false)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create access token"})
+		return
+	}
+
+	refreshToken, err := util.CreateRefreshToken(User.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create refresh token"})
 		return
 	}
 
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("Authorization", tokenstring, 3600*24*30, "", "", false, true)
+	c.SetCookie("Authorization", accessToken, 15*60, "", "", false, true)
+	c.SetCookie("RefreshToken", refreshToken, 7*24*60*60, "", "", false, true)
 
 	c.JSON(http.StatusOK, true)
 
 }
 
-func SignUp(c *gin.Context) {
+func (User) Register(c *gin.Context) {
 	var body struct {
 		UserName       string
 		Password       string
@@ -95,14 +104,16 @@ func SignUp(c *gin.Context) {
 	c.JSON(200, userID)
 }
 
-func Logout(c *gin.Context) {
+func (User) Logout(c *gin.Context) {
 	c.SetSameSite(http.SameSiteLaxMode)
+
 	c.SetCookie("Authorization", "", -1, "", "", false, true)
+	c.SetCookie("RefreshToken", "", -1, "", "", false, true)
 
 	c.JSON(http.StatusOK, gin.H{"LoggedOut": true})
 }
 
-func GetUserId(c *gin.Context) {
+func (User) GetUserId(c *gin.Context) {
 	tokenstring, err := c.Cookie("Authorization")
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -144,7 +155,7 @@ func GetUserId(c *gin.Context) {
 
 }
 
-func GetUser(c *gin.Context) {
+func (User) GetUser(c *gin.Context) {
 	id := c.Param("id")
 
 	var user models.User
@@ -160,7 +171,7 @@ func GetUser(c *gin.Context) {
 	c.JSON(200, user)
 }
 
-func DoesUserExist(c *gin.Context) {
+func (User) DoesUserExist(c *gin.Context) {
 	var body struct {
 		UserName string
 	}
@@ -184,7 +195,7 @@ func DoesUserExist(c *gin.Context) {
 
 }
 
-func MakeUserInActive(c *gin.Context) {
+func (User) MakeUserInActive(c *gin.Context) {
 	id := c.Param("id")
 
 	fmt.Println(id)
@@ -200,7 +211,7 @@ func MakeUserInActive(c *gin.Context) {
 
 }
 
-func UserActivity(c *gin.Context) {
+func (User) UserActivity(c *gin.Context) {
 	username := c.Param("username")
 
 	var User models.User
@@ -215,4 +226,15 @@ func UserActivity(c *gin.Context) {
 	// user is not logged in
 	c.JSON(200, User.IsActive)
 
+}
+
+func (u *User) InitializeRoutes(r *gin.Engine) {
+	r.POST("/Register", u.Register)
+	r.POST("/SignIn", u.SignIn)
+	r.GET("/Logout", middleware.RequireAuth, u.Logout)
+	r.GET("/User/:id", middleware.RequireAuth, u.GetUser)
+	r.POST("/User/Exists", u.DoesUserExist)
+	r.GET("/User/Id", middleware.RequireAuth, u.GetUserId)
+	r.GET("/User/InActive/:id", middleware.RequireAuth, u.MakeUserInActive)
+	r.GET("/User/IsNotActive/:username", u.UserActivity)
 }

@@ -2,12 +2,19 @@ package controllers
 
 import (
 	"gelio/m/initializers"
+	"gelio/m/middleware"
 	"gelio/m/models"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetPosts(c *gin.Context) {
+type Post struct{}
+
+func PostController() *Post {
+	return &Post{}
+}
+
+func (Post) GetPosts(c *gin.Context) {
 	id := c.Param("id")
 
 	var Posts []models.Post
@@ -30,7 +37,7 @@ func GetPosts(c *gin.Context) {
 
 }
 
-func UploadPost(c *gin.Context) {
+func (Post) UploadPost(c *gin.Context) {
 	var body struct {
 		Message     string
 		UserId      int
@@ -56,4 +63,9 @@ func UploadPost(c *gin.Context) {
 
 	c.JSON(200, PostId)
 
+}
+
+func (p *Post) InitializeRoutes(r *gin.Engine) {
+	r.GET("/Posts/:id", middleware.RequireAuth, p.GetPosts)
+	r.POST("/Post", middleware.RequireAuth, p.UploadPost)
 }

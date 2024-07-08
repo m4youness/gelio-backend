@@ -1,9 +1,10 @@
 package initializers
 
 import (
-	"fmt"
-	"github.com/cloudinary/cloudinary-go"
+	"log"
 	"os"
+
+	"github.com/cloudinary/cloudinary-go"
 )
 
 var CloudinaryClient *cloudinary.Cloudinary
@@ -17,7 +18,7 @@ func CloudinaryConnect() {
 	CloudinaryClient, err = cloudinary.NewFromParams("geliobackend", ApiKey, ApiSecret)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 		return
 	}
 
