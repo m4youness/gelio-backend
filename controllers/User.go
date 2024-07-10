@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	util "gelio/m/Util"
 	"gelio/m/initializers"
@@ -48,6 +49,7 @@ func (User) SignIn(c *gin.Context) {
 	}
 
 	accessToken, err := util.CreateAccessToken(User.UserId)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create access token"})
 		return
@@ -158,14 +160,29 @@ func (User) GetUserId(c *gin.Context) {
 func (User) GetUser(c *gin.Context) {
 	id := c.Param("id")
 
+	cachedUser, err := initializers.RedisClient.Get(initializers.Ctx, fmt.Sprintf("user:%s", id)).Result()
+
+	if err == nil {
+		var user models.User
+		json.Unmarshal([]byte(cachedUser), &user)
+		c.JSON(200, user)
+		return
+	}
+
 	var user models.User
 
-	err := initializers.DB.Get(&user, "select * from users where user_id = $1", id)
+	err = initializers.DB.Get(&user, "select * from users where user_id = $1", id)
 
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusNotFound, nil)
 		return
+	}
+
+	userData, _ := json.Marshal(user)
+	err = initializers.RedisClient.Set(initializers.Ctx, fmt.Sprintf("user:%s", id), userData, time.Hour).Err()
+	if err != nil {
+		fmt.Println("Failed to cache user data:", err)
 	}
 
 	c.JSON(200, user)

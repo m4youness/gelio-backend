@@ -34,20 +34,22 @@ func (s *Server) handleWS(ws *websocket.Conn) {
 		return
 	}
 
+	s.addConn(idMessage, ws)
 	ids := strings.Split(idMessage, "-")
 	if len(ids) != 2 {
 		fmt.Println("Invalid ID message format. Expected format: SenderId-ReceiverId")
 		return
+
 	}
 
 	SenderId := ids[0]
 	ReceiverId := ids[1]
 
-	s.addConn(SenderId, ws)
+	Receiver := ReceiverId + "-" + SenderId
 
 	fmt.Println("New incoming connection from Sender ID:", SenderId, "for Receiver ID:", ReceiverId)
 
-	s.readLoop(ws, ReceiverId)
+	s.readLoop(ws, Receiver)
 
 }
 
@@ -101,7 +103,6 @@ func (s *Server) sendMessageToUser(message string, receiverId string) error {
 }
 
 func (s *Server) InitializeRoutes(r *gin.Engine) {
-
 	r.GET("/ws", middleware.RequireAuth, func(c *gin.Context) {
 		websocket.Handler(s.handleWS).ServeHTTP(c.Writer, c.Request)
 	})

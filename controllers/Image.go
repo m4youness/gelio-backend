@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
 	"gelio/m/initializers"
 	"gelio/m/middleware"
 	"gelio/m/models"
 	"net/http"
+	"time"
 
 	"github.com/cloudinary/cloudinary-go/api/uploader"
 	"github.com/gin-gonic/gin"
@@ -57,17 +60,28 @@ func (Image) UploadImage(c *gin.Context) {
 func (Image) FindImage(c *gin.Context) {
 	id := c.Param("id")
 
-	var Image models.Image
-
-	err := initializers.DB.Get(&Image, "select * from image where image_id = $1", id)
-
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+	cachedImage, err := initializers.RedisClient.Get(initializers.Ctx, fmt.Sprintf("image:%s", id)).Result()
+	if err == nil {
+		var image models.Image
+		json.Unmarshal([]byte(cachedImage), &image)
+		c.JSON(200, image)
 		return
 	}
 
-	c.JSON(200, Image)
+	var image models.Image
+	err = initializers.DB.Get(&image, "select * from image where image_id = $1", id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 
+	imageData, _ := json.Marshal(image)
+	err = initializers.RedisClient.Set(initializers.Ctx, fmt.Sprintf("image:%s", id), imageData, time.Hour*24).Err()
+	if err != nil {
+		fmt.Println("Failed to cache image data:", err)
+	}
+
+	c.JSON(http.StatusOK, image)
 }
 
 func (i *Image) InitializeRoutes(r *gin.Engine) {

@@ -51,6 +51,7 @@ func (Comments) AddComment(c *gin.Context) {
 	}
 
 	c.JSON(200, true)
+
 }
 
 func (c *Comments) InitializeRoutes(r *gin.Engine) {
