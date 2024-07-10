@@ -1,9 +1,10 @@
 package initializers
 
 import (
+	"fmt"
+
 	"github.com/go-redis/redis/v8"
 	"golang.org/x/net/context"
-	"log"
 )
 
 var (
@@ -18,6 +19,6 @@ func InitRedis() {
 
 	_, err := RedisClient.Ping(Ctx).Result()
 	if err != nil {
-		log.Fatalf("Could not connect to Redis: %v", err)
+		fmt.Printf("Could not connect to Redis: %v", err)
 	}
 }

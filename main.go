@@ -8,7 +8,6 @@ import (
 )
 
 func init() {
-	initializers.LoadEnvVariables()
 	initializers.CloudinaryConnect()
 	initializers.DbConnect()
 	initializers.InitRedis()
