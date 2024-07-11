@@ -61,7 +61,7 @@ func (User) SignIn(c *gin.Context) {
 		return
 	}
 
-	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie("Authorization", accessToken, 15*60, "/", "glistening-respect-production.up.railway.app", true, true)
 	c.SetCookie("RefreshToken", refreshToken, 7*24*60*60, "/", "glistening-respect-production.up.railway.app", true, true)
 
@@ -107,7 +107,7 @@ func (User) Register(c *gin.Context) {
 }
 
 func (User) Logout(c *gin.Context) {
-	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetSameSite(http.SameSiteNoneMode)
 
 	c.SetCookie("Authorization", "", -1, "/", "glistening-respect-production.up.railway.app", true, true)
 	c.SetCookie("RefreshToken", "", -1, "/", "glistening-respect-production.up.railway.app", true, true)

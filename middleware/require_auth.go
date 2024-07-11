@@ -48,6 +48,7 @@ func RequireAuth(c *gin.Context) {
 				return
 			}
 
+			c.SetSameSite(http.SameSiteNoneMode)
 			c.SetCookie("Authorization", newAccessToken, 15*60, "/", "glistening-respect-production.up.railway.app", true, true)
 			c.Set("user", user)
 			c.Next()
