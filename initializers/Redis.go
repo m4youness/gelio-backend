@@ -18,9 +18,9 @@ func InitRedis() {
 		log.Fatal("Redis url is empty")
 	}
 
-	RedisClient = redis.NewClient(&redis.Options{
-		Addr: os.Getenv("REDIS_URL"),
-	})
+	opt, _ := redis.ParseURL(os.Getenv("REDIS_URL"))
+
+	RedisClient = redis.NewClient(opt)
 
 	_, err := RedisClient.Ping(Ctx).Result()
 	if err != nil {
