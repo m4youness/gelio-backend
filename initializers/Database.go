@@ -17,6 +17,7 @@ func DbConnect() {
 		log.Fatal("DB_URL environment variable not set")
 		return
 	}
+
 	log.Printf("Connecting to database with DSN: %s", dsn)
 
 	DB, Err = sqlx.Connect("postgres", dsn)

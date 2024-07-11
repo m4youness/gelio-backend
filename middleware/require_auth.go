@@ -48,7 +48,7 @@ func RequireAuth(c *gin.Context) {
 				return
 			}
 
-			c.SetCookie("Authorization", newAccessToken, 15*60, "", "", false, true)
+			c.SetCookie("Authorization", newAccessToken, 15*60, "/", "glistening-respect-production.up.railway.app", true, true)
 			c.Set("user", user)
 			c.Next()
 			return
