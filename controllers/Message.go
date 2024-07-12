@@ -158,6 +158,12 @@ func (Message) AddContact(c *gin.Context) {
 		return
 	}
 
+	redisKey := fmt.Sprintf("posts:%d", body.UserId)
+	if delErr := initializers.RedisClient.Del(initializers.Ctx, redisKey).Err(); delErr != nil {
+		fmt.Println("Failed to delete Redis key:", delErr)
+		// You may choose to handle this error differently based on your requirements
+	}
+
 	c.JSON(201, true)
 
 }
