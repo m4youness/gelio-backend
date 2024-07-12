@@ -19,6 +19,8 @@ func PostController() *Post {
 
 func (Post) GetPosts(c *gin.Context) {
 	id := c.Param("id")
+	offset := c.Param("offset")
+	limit := c.Param("limit")
 
 	cachedPosts, err := initializers.RedisClient.Get(initializers.Ctx, fmt.Sprintf("posts:%s", id)).Result()
 
@@ -38,7 +40,7 @@ func (Post) GetPosts(c *gin.Context) {
       UNION
       SELECT post_id, body, post.user_id, created_date, image_id FROM followers 
       INNER JOIN post on post.user_id = followers.user_id WHERE followers.follower_id = $1
-	  UNION SELECT * FROM post where user_id = $1 order by post_id desc`, id)
+	  UNION SELECT * FROM post where user_id = $1 order by post_id desc limit $2 offset $3`, id, limit, offset)
 
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -108,6 +110,6 @@ func (Post) UploadPost(c *gin.Context) {
 }
 
 func (p *Post) InitializeRoutes(r *gin.Engine) {
-	r.GET("/Posts/:id", middleware.RequireAuth, p.GetPosts)
+	r.GET("/Posts/:id/:offset/:limit", middleware.RequireAuth, p.GetPosts)
 	r.POST("/Post", middleware.RequireAuth, p.UploadPost)
 }
