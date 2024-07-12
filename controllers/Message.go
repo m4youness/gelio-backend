@@ -144,9 +144,9 @@ func (Message) AddContact(c *gin.Context) {
 
 	var Follower models.Follower
 
-	Error := initializers.DB.Get(&Follower, "select * from followers where user_id = $1 and follower_id = $2", User.UserId, body.UserId)
+	err = initializers.DB.Get(&Follower, "select * from followers where user_id = $1 and follower_id = $2", User.UserId, body.UserId)
 
-	if Error == nil {
+	if err == nil {
 		c.JSON(409, false)
 		return
 	}
@@ -156,12 +156,6 @@ func (Message) AddContact(c *gin.Context) {
 	if Err != nil {
 		c.JSON(500, false)
 		return
-	}
-
-	redisKey := fmt.Sprintf("posts:%d", body.UserId)
-	if delErr := initializers.RedisClient.Del(initializers.Ctx, redisKey).Err(); delErr != nil {
-		fmt.Println("Failed to delete Redis key:", delErr)
-		// You may choose to handle this error differently based on your requirements
 	}
 
 	c.JSON(201, true)
