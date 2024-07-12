@@ -29,7 +29,7 @@ func (Post) GetPosts(c *gin.Context) {
       UNION
       SELECT post_id, body, post.user_id, created_date, image_id FROM followers 
       INNER JOIN post on post.user_id = followers.user_id WHERE followers.follower_id = $1
-	  UNION SELECT * FROM post where user_id = $1 order by post_id`, id)
+	  UNION SELECT * FROM post where user_id = $1 order by post_id desc`, id)
 
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
