@@ -20,18 +20,9 @@ func PostController() *Post {
 func (Post) GetPosts(c *gin.Context) {
 	id := c.Param("id")
 
-	cachedPosts, err := initializers.RedisClient.Get(initializers.Ctx, fmt.Sprintf("posts:%s", id)).Result()
-
-	if err == nil {
-		var Posts []models.Post
-		json.Unmarshal([]byte(cachedPosts), &Posts)
-		c.JSON(200, Posts)
-		return
-	}
-
 	var Posts []models.Post
 
-	err = initializers.DB.Select(&Posts, `SELECT post_id, body, post.user_id, created_date, image_id
+	err := initializers.DB.Select(&Posts, `SELECT post_id, body, post.user_id, created_date, image_id
       FROM Message
       INNER JOIN post ON post.user_id = Message.sender_id 
       WHERE receiver_id = $1

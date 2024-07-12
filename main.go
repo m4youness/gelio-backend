@@ -3,6 +3,7 @@ package main
 import (
 	"gelio/m/controllers"
 	"gelio/m/initializers"
+
 	"github.com/gin-gonic/gin"
 	"github.com/rs/cors"
 )
@@ -17,6 +18,7 @@ func main() {
 
 	r := gin.Default()
 	c := cors.New(cors.Options{
+		//AllowedOrigins:   []string{"https://localhost:4200"},
 		AllowedOrigins:   []string{"https://gelio.vercel.app"},
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowCredentials: true,
