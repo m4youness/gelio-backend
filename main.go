@@ -18,7 +18,7 @@ func main() {
 
 	r := gin.Default()
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"https://localhost:4200"},
+		AllowedOrigins: []string{"http://localhost:4200"},
 		//AllowedOrigins:   []string{"https://gelio.vercel.app"},
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowCredentials: true,
