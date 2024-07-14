@@ -26,6 +26,7 @@ func main() {
 	r.StaticFile("/test", "./test.html")
 
 	r.Use(corsHandler(c))
+
 	// User
 	userController := controllers.UserController()
 	userController.InitializeRoutes(r)
