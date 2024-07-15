@@ -20,7 +20,7 @@ func main() {
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"http://localhost:4200"},
 		// AllowedOrigins:   []string{"https://gelio.vercel.app"},
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS"},
 		AllowCredentials: true,
 	})
 	r.StaticFile("/test", "./test.html")
