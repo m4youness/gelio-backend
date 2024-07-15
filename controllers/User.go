@@ -245,6 +245,43 @@ func (User) UserActivity(c *gin.Context) {
 
 }
 
+func (User) UpdateUser(c *gin.Context) {
+	var body struct {
+		Firstname      string
+		Lastname       string
+		Username       string
+		Email          string
+		Phonenumber    string
+		CountryId      int
+		GenderId       int
+		ProfileImageId int
+		UserId         int
+		PersonId       int
+	}
+
+	if err := c.Bind(&body); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err := initializers.DB.Exec("update people set first_name = $1, last_name = $2, email = $3, phone_number = $4, country_id = $5, gender_id = $6, where person_id = $7", body.Firstname, body.Lastname, body.Email, body.Phonenumber, body.CountryId, body.GenderId, body.PersonId)
+
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err = initializers.DB.Exec("update users set username = $1, profile_image_id = $2, where user_id = $3")
+
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "User updated successfully"})
+
+}
+
 func (u *User) InitializeRoutes(r *gin.Engine) {
 	r.POST("/Register", u.Register)
 	r.POST("/SignIn", u.SignIn)
@@ -254,4 +291,5 @@ func (u *User) InitializeRoutes(r *gin.Engine) {
 	r.GET("/User/Id", middleware.RequireAuth, u.GetUserId)
 	r.GET("/User/InActive/:id", middleware.RequireAuth, u.MakeUserInActive)
 	r.GET("/User/IsNotActive/:username", u.UserActivity)
+	r.PUT("/User/Update", middleware.RequireAuth, u.UpdateUser)
 }
