@@ -264,14 +264,14 @@ func (User) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	_, err := initializers.DB.Exec("update people set first_name = $1, last_name = $2, email = $3, phone_number = $4, country_id = $5, gender_id = $6, where person_id = $7", body.Firstname, body.Lastname, body.Email, body.Phonenumber, body.CountryId, body.GenderId, body.PersonId)
+	_, err := initializers.DB.Exec("update people set first_name = $1, last_name = $2, email = $3, phone_number = $4, country_id = $5, gender_id = $6 where person_id = $7", body.Firstname, body.Lastname, body.Email, body.Phonenumber, body.CountryId, body.GenderId, body.PersonId)
 
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	_, err = initializers.DB.Exec("update users set username = $1, profile_image_id = $2, where user_id = $3")
+	_, err = initializers.DB.Exec("update users set username = $1, profile_image_id = $2 where user_id = $3")
 
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
