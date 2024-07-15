@@ -271,7 +271,7 @@ func (User) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	_, err = initializers.DB.Exec("update users set username = $1, profile_image_id = $2 where user_id = $3")
+	_, err = initializers.DB.Exec("update users set username = $1, profile_image_id = $2 where user_id = $3", body.Username, body.ProfileImageId, body.UserId)
 
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
