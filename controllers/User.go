@@ -278,6 +278,11 @@ func (User) UpdateUser(c *gin.Context) {
 		return
 	}
 
+	err = initializers.RedisClient.Del(initializers.Ctx, fmt.Sprintf("user:%d", body.UserId)).Err()
+	if err != nil {
+		fmt.Println("Couldn't delete user cache")
+	}
+
 	c.JSON(200, gin.H{"message": "User updated successfully"})
 
 }
