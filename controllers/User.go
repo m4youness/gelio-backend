@@ -36,7 +36,7 @@ func (User) SignIn(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusOK, false)
+		c.JSON(400, false)
 		return
 	}
 
@@ -44,7 +44,7 @@ func (User) SignIn(c *gin.Context) {
 
 	if Err != nil {
 		fmt.Println(Err)
-		c.JSON(http.StatusOK, false)
+		c.JSON(400, false)
 		return
 	}
 
@@ -65,7 +65,7 @@ func (User) SignIn(c *gin.Context) {
 	c.SetCookie("Authorization", accessToken, 15*60, "/", "glistening-respect-production.up.railway.app", true, true)
 	c.SetCookie("RefreshToken", refreshToken, 7*24*60*60, "/", "glistening-respect-production.up.railway.app", true, true)
 
-	c.JSON(http.StatusOK, true)
+	c.JSON(200, true)
 
 }
 
@@ -235,12 +235,11 @@ func (User) UserActivity(c *gin.Context) {
 
 	err := initializers.DB.Get(&User, "select * from users where username = $1", username)
 
-	// error means he is logged in
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	// user is not logged in
+
 	c.JSON(200, User.IsActive)
 
 }
@@ -294,7 +293,7 @@ func (u *User) InitializeRoutes(r *gin.Engine) {
 	r.GET("/User/:id", middleware.RequireAuth, u.GetUser)
 	r.POST("/User/Exists", u.DoesUserExist)
 	r.GET("/User/Id", middleware.RequireAuth, u.GetUserId)
-	r.GET("/User/InActive/:id", middleware.RequireAuth, u.MakeUserInActive)
+	r.GET("/User/Deactivate/:id", middleware.RequireAuth, u.MakeUserInActive)
 	r.GET("/User/IsNotActive/:username", u.UserActivity)
 	r.PUT("/User/Update", middleware.RequireAuth, u.UpdateUser)
 }
