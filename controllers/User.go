@@ -41,6 +41,11 @@ func (u *UserController) SignIn(c *gin.Context) {
 
 	User, err := u._IUserService.GetUserWithName(body.Username)
 
+	if !User.IsActive {
+		c.JSON(400, gin.H{"error": "User is inactive"})
+		return
+	}
+
 	if err != nil {
 		c.JSON(400, false)
 		return
