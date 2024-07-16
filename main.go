@@ -45,7 +45,7 @@ func main() {
 	imageController.InitializeRoutes(r)
 
 	// Message
-	messageController := controllers.MessageController()
+	messageController := controllers.MessageController(services.UserService{})
 	messageController.InitializeRoutes(r)
 
 	// Post

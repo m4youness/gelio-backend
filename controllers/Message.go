@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"gelio/m/IServices"
 	"gelio/m/initializers"
 	"gelio/m/middleware"
 	"gelio/m/models"
@@ -9,10 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Message struct{}
+type Message struct {
+	_IUserServices IServices.IUserService
+}
 
-func MessageController() *Message {
-	return &Message{}
+func MessageController(IUserServices IServices.IUserService) *Message {
+	return &Message{
+		_IUserServices: IUserServices,
+	}
 }
 
 func (Message) LoadContacts(c *gin.Context) {
@@ -120,7 +125,7 @@ func (Message) SendMessage(c *gin.Context) {
 	c.JSON(200, MessageId)
 }
 
-func (Message) AddContact(c *gin.Context) {
+func (m *Message) AddContact(c *gin.Context) {
 	var body struct {
 		Username string
 		UserId   int
@@ -134,11 +139,10 @@ func (Message) AddContact(c *gin.Context) {
 
 	var User models.User
 
-	err := initializers.DB.Get(&User, "select * from users where username = $1", body.Username)
+	User, err := m._IUserServices.GetUserWithName(body.Username)
 
 	if err != nil {
-		fmt.Println(err)
-		c.JSON(404, false)
+		c.JSON(404, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -162,25 +166,22 @@ func (Message) AddContact(c *gin.Context) {
 
 }
 
-func (Message) IsPersonNotContact(c *gin.Context) {
+func (m *Message) IsPersonNotContact(c *gin.Context) {
 	var body struct {
 		Username string
 		UserId   int
 	}
 
 	if err := c.Bind(&body); err != nil {
-		fmt.Println(err)
-		c.JSON(400, false)
+		c.JSON(404, gin.H{"error": err.Error()})
 		return
 	}
 
-	var User models.User
-
-	err := initializers.DB.Get(&User, "select * from users where username = $1", body.Username)
+	_, err := m._IUserServices.GetUserWithName(body.Username)
 
 	if err != nil {
-		fmt.Println(err)
-		c.JSON(404, false)
+		c.JSON(404, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(200, true)
