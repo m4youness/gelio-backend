@@ -35,7 +35,7 @@ func (UserService) GetUserWithName(userName string) (models.User, error) {
 
 }
 
-func CreateUser(user models.User) (int, error) {
+func (UserService) CreateUser(user models.User) (int, error) {
 	res := initializers.DB.QueryRow("insert into users (username, password, created_date, is_active, profile_image_id, person_id) values ($1, $2, $3, $4, $5, $6) RETURNING user_id",
 		user.Username, user.Password, user.CreatedDate, user.IsActive, user.ProfileImageId, user.PersonID)
 
@@ -49,7 +49,7 @@ func CreateUser(user models.User) (int, error) {
 	return userId, nil
 }
 
-func UpdateUser(Username string, ProfileImageId int, UserId int) error {
+func (UserService) UpdateUser(Username string, ProfileImageId int, UserId int) error {
 	_, err := initializers.DB.Exec("update users set username = $1, profile_image_id = $2 where user_id = $3", Username, ProfileImageId, UserId)
 
 	if err != nil {
@@ -59,7 +59,7 @@ func UpdateUser(Username string, ProfileImageId int, UserId int) error {
 	return nil
 }
 
-func DeleteUser(userId interface{}) error {
+func (UserService) DeleteUser(userId interface{}) error {
 	_, err := initializers.DB.Exec("update users set is_active = false where user_id = $1", userId)
 
 	if err != nil {
