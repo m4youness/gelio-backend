@@ -1,6 +1,7 @@
 package main
 
 import (
+	services "gelio/m/Services"
 	"gelio/m/controllers"
 	"gelio/m/initializers"
 
@@ -18,8 +19,8 @@ func main() {
 
 	r := gin.Default()
 	c := cors.New(cors.Options{
-		//AllowedOrigins: []string{"http://localhost:4200"},
-		AllowedOrigins:   []string{"https://gelio.vercel.app"},
+		AllowedOrigins: []string{"http://localhost:4200"},
+		//AllowedOrigins:   []string{"https://gelio.vercel.app"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS"},
 		AllowCredentials: true,
 	})
@@ -28,7 +29,7 @@ func main() {
 	r.Use(corsHandler(c))
 
 	// User
-	userController := controllers.UserController()
+	userController := controllers.NewUserController(services.NewUserService())
 	userController.InitializeRoutes(r)
 
 	// People

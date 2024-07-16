@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"gelio/m/IServices"
 	util "gelio/m/Util"
 	"gelio/m/initializers"
 	"gelio/m/middleware"
@@ -16,13 +17,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type User struct{}
-
-func UserController() *User {
-	return &User{}
+type UserController struct {
+	_IUserService IServices.IUserService
 }
 
-func (User) SignIn(c *gin.Context) {
+func NewUserController(IUserService IServices.IUserService) *UserController {
+	return &UserController{
+		_IUserService: IUserService,
+	}
+}
+
+func (u *UserController) SignIn(c *gin.Context) {
 	var body struct {
 		Username string
 		Password string
@@ -32,10 +37,9 @@ func (User) SignIn(c *gin.Context) {
 
 	var User models.User
 
-	err := initializers.DB.Get(&User, "select * from users where username = $1", body.Username)
+	User, err := u._IUserService.GetUserWithName(body.Username)
 
 	if err != nil {
-		fmt.Println(err)
 		c.JSON(400, false)
 		return
 	}
@@ -69,7 +73,7 @@ func (User) SignIn(c *gin.Context) {
 
 }
 
-func (User) Register(c *gin.Context) {
+func (UserController) Register(c *gin.Context) {
 	var body struct {
 		UserName       string
 		Password       string
@@ -106,7 +110,7 @@ func (User) Register(c *gin.Context) {
 	c.JSON(200, userID)
 }
 
-func (User) Logout(c *gin.Context) {
+func (UserController) Logout(c *gin.Context) {
 	c.SetSameSite(http.SameSiteNoneMode)
 
 	c.SetCookie("Authorization", "", -1, "/", "glistening-respect-production.up.railway.app", true, true)
@@ -115,7 +119,7 @@ func (User) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"LoggedOut": true})
 }
 
-func (User) GetUserId(c *gin.Context) {
+func (u *UserController) GetUserId(c *gin.Context) {
 	tokenstring, err := c.Cookie("Authorization")
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -142,7 +146,7 @@ func (User) GetUserId(c *gin.Context) {
 
 		var user models.User
 
-		initializers.DB.Get(&user, "select * from users where user_id = $1", claims["sub"])
+		user, _ = u._IUserService.GetUserWithId(claims["sub"])
 
 		if user.UserId == 0 {
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -157,7 +161,7 @@ func (User) GetUserId(c *gin.Context) {
 
 }
 
-func (User) GetUser(c *gin.Context) {
+func (u *UserController) GetUser(c *gin.Context) {
 	id := c.Param("id")
 
 	cachedUser, err := initializers.RedisClient.Get(initializers.Ctx, fmt.Sprintf("user:%s", id)).Result()
@@ -171,11 +175,10 @@ func (User) GetUser(c *gin.Context) {
 
 	var user models.User
 
-	err = initializers.DB.Get(&user, "select * from users where user_id = $1", id)
+	user, err = u._IUserService.GetUserWithId(id)
 
 	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusNotFound, nil)
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -188,7 +191,7 @@ func (User) GetUser(c *gin.Context) {
 	c.JSON(200, user)
 }
 
-func (User) DoesUserExist(c *gin.Context) {
+func (u *UserController) DoesUserExist(c *gin.Context) {
 	var body struct {
 		UserName string
 	}
@@ -199,11 +202,9 @@ func (User) DoesUserExist(c *gin.Context) {
 		return
 	}
 
-	var user models.User
+	_, err = u._IUserService.GetUserWithName(body.UserName)
 
-	Err := initializers.DB.Get(&user, "select user_id from users where username = $1", body.UserName)
-
-	if Err != nil {
+	if err != nil {
 		c.JSON(200, false)
 		return
 	}
@@ -212,7 +213,7 @@ func (User) DoesUserExist(c *gin.Context) {
 
 }
 
-func (User) MakeUserInActive(c *gin.Context) {
+func (UserController) MakeUserInActive(c *gin.Context) {
 	id := c.Param("id")
 
 	fmt.Println(id)
@@ -228,12 +229,12 @@ func (User) MakeUserInActive(c *gin.Context) {
 
 }
 
-func (User) UserActivity(c *gin.Context) {
+func (u *UserController) UserActivity(c *gin.Context) {
 	username := c.Param("username")
 
 	var User models.User
 
-	err := initializers.DB.Get(&User, "select * from users where username = $1", username)
+	User, err := u._IUserService.GetUserWithName(username)
 
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -244,7 +245,7 @@ func (User) UserActivity(c *gin.Context) {
 
 }
 
-func (User) UpdateUser(c *gin.Context) {
+func (UserController) UpdateUser(c *gin.Context) {
 	var body struct {
 		Firstname      string
 		Lastname       string
@@ -286,7 +287,7 @@ func (User) UpdateUser(c *gin.Context) {
 
 }
 
-func (u *User) InitializeRoutes(r *gin.Engine) {
+func (u *UserController) InitializeRoutes(r *gin.Engine) {
 	r.POST("/Register", u.Register)
 	r.POST("/SignIn", u.SignIn)
 	r.GET("/Logout", middleware.RequireAuth, u.Logout)
