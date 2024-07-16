@@ -27,6 +27,17 @@ func NewUserController(IUserService IServices.IUserService) *UserController {
 	}
 }
 
+func NewUser(username string, hash string, createdDate string, isActive bool, profileImageId int, personId int) models.User {
+	return models.User{
+		Username:       username,
+		Password:       hash,
+		CreatedDate:    createdDate,
+		IsActive:       isActive,
+		ProfileImageId: &profileImageId,
+		PersonID:       personId,
+	}
+}
+
 func (u *UserController) SignIn(c *gin.Context) {
 	var body struct {
 		Username string
@@ -73,7 +84,7 @@ func (u *UserController) SignIn(c *gin.Context) {
 
 }
 
-func (UserController) Register(c *gin.Context) {
+func (u *UserController) Register(c *gin.Context) {
 	var body struct {
 		UserName       string
 		Password       string
@@ -96,18 +107,14 @@ func (UserController) Register(c *gin.Context) {
 		return
 	}
 
-	Res := initializers.DB.QueryRow("insert into users (username, password, created_date, is_active, profile_image_id, person_id) values ($1, $2, $3, $4, $5, $6) RETURNING user_id",
-		body.UserName, hash, body.CreatedDate, body.IsActive, body.ProfileImageId, body.PersonID)
+	userId, err := u._IUserService.CreateUser(NewUser(body.UserName, string(hash), body.CreatedDate, body.IsActive, body.ProfileImageId, body.PersonID))
 
-	var userID int
-	Err := Res.Scan(&userID)
-
-	if Err != nil {
-		fmt.Println(Err)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, userID)
+	c.JSON(200, userId)
 }
 
 func (UserController) Logout(c *gin.Context) {
@@ -213,12 +220,10 @@ func (u *UserController) DoesUserExist(c *gin.Context) {
 
 }
 
-func (UserController) MakeUserInActive(c *gin.Context) {
+func (u *UserController) MakeUserInActive(c *gin.Context) {
 	id := c.Param("id")
 
-	fmt.Println(id)
-
-	_, err := initializers.DB.Exec("update users set is_active = false where user_id = $1", id)
+	err := u._IUserService.DeleteUser(id)
 
 	if err != nil {
 		c.JSON(404, gin.H{"error": err.Error()})
@@ -245,7 +250,7 @@ func (u *UserController) UserActivity(c *gin.Context) {
 
 }
 
-func (UserController) UpdateUser(c *gin.Context) {
+func (u *UserController) UpdateUser(c *gin.Context) {
 	var body struct {
 		Firstname      string
 		Lastname       string
@@ -271,8 +276,7 @@ func (UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	_, err = initializers.DB.Exec("update users set username = $1, profile_image_id = $2 where user_id = $3", body.Username, body.ProfileImageId, body.UserId)
-
+	err = u._IUserService.UpdateUser(body.Username, body.ProfileImageId, body.UserId)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
