@@ -29,11 +29,11 @@ func main() {
 	r.Use(corsHandler(c))
 
 	// User
-	userController := controllers.NewUserController(services.NewUserService())
+	userController := controllers.NewUserController(services.UserService{}, services.PersonService{})
 	userController.InitializeRoutes(r)
 
 	// People
-	peopleController := controllers.PeopleController()
+	peopleController := controllers.NewPersonController(services.PersonService{})
 	peopleController.InitializeRoutes(r)
 
 	// Country

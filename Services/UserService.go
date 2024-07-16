@@ -7,8 +7,15 @@ import (
 
 type UserService struct{}
 
-func NewUserService() *UserService {
-	return &UserService{}
+func (UserService) NewUser(username string, hash string, createdDate string, isActive bool, profileImageId int, personId int) models.User {
+	return models.User{
+		Username:       username,
+		Password:       hash,
+		CreatedDate:    createdDate,
+		IsActive:       isActive,
+		ProfileImageId: &profileImageId,
+		PersonID:       personId,
+	}
 }
 
 func (UserService) GetUserWithId(userId interface{}) (models.User, error) {

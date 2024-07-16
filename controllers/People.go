@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"gelio/m/initializers"
+	"gelio/m/IServices"
 	"gelio/m/middleware"
 	"gelio/m/models"
 	"strings"
@@ -10,13 +10,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Person struct{}
-
-func PeopleController() *Person {
-	return &Person{}
+type PersonController struct {
+	_IPersonService IServices.IPersonService
 }
 
-func (Person) AddPerson(c *gin.Context) {
+func NewPersonController(IPersonService IServices.IPersonService) *PersonController {
+	return &PersonController{
+		_IPersonService: IPersonService,
+	}
+}
+
+func (u *PersonController) AddPerson(c *gin.Context) {
 	var body struct {
 		FirstName   string
 		LastName    string
@@ -29,29 +33,24 @@ func (Person) AddPerson(c *gin.Context) {
 
 	err := c.Bind(&body)
 
+	person := u._IPersonService.NewPerson(-1, body.FirstName, body.LastName, body.GenderID, body.PhoneNumber, body.Email, body.DateOfBirth, body.CountryID)
+
+	personId, err := u._IPersonService.CreatePerson(person)
+
 	if err != nil {
-		fmt.Println(err)
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	res := initializers.DB.QueryRow("insert into people (first_name, last_name, gender_id, phone_number, email, date_of_birth, country_id) values ($1, $2, $3, $4, $5, $6, $7) RETURNING person_id", body.FirstName, body.LastName, body.GenderID, body.PhoneNumber, body.Email, body.DateOfBirth, body.CountryID)
-	var person_id int
-	res.Scan(&person_id)
-
-	if person_id == 0 {
-		fmt.Println(res.Err())
-		fmt.Println("Err inserting data in the db")
-	}
-
-	c.JSON(200, person_id)
+	c.JSON(200, personId)
 }
 
-func (Person) GetPerson(c *gin.Context) {
+func (p *PersonController) GetPerson(c *gin.Context) {
 	id := c.Param("id")
 
 	var Person models.Person
 
-	err := initializers.DB.Get(&Person, "select * from People where person_id = $1", id)
+	Person, err := p._IPersonService.GetPersonWithId(id)
 
 	dateParts := strings.Split(Person.DateOfBirth, "T")
 	Person.DateOfBirth = dateParts[0]
@@ -65,7 +64,7 @@ func (Person) GetPerson(c *gin.Context) {
 
 }
 
-func (p *Person) InitializeRoutes(r *gin.Engine) {
+func (p *PersonController) InitializeRoutes(r *gin.Engine) {
 	r.POST("/Person", p.AddPerson)
 	r.GET("/Person/:id", middleware.RequireAuth, p.GetPerson)
 }

@@ -18,23 +18,14 @@ import (
 )
 
 type UserController struct {
-	_IUserService IServices.IUserService
+	_IUserService   IServices.IUserService
+	_IPersonService IServices.IPersonService
 }
 
-func NewUserController(IUserService IServices.IUserService) *UserController {
+func NewUserController(IUserService IServices.IUserService, IPersonService IServices.IPersonService) *UserController {
 	return &UserController{
-		_IUserService: IUserService,
-	}
-}
-
-func NewUser(username string, hash string, createdDate string, isActive bool, profileImageId int, personId int) models.User {
-	return models.User{
-		Username:       username,
-		Password:       hash,
-		CreatedDate:    createdDate,
-		IsActive:       isActive,
-		ProfileImageId: &profileImageId,
-		PersonID:       personId,
+		_IUserService:   IUserService,
+		_IPersonService: IPersonService,
 	}
 }
 
@@ -107,7 +98,9 @@ func (u *UserController) Register(c *gin.Context) {
 		return
 	}
 
-	userId, err := u._IUserService.CreateUser(NewUser(body.UserName, string(hash), body.CreatedDate, body.IsActive, body.ProfileImageId, body.PersonID))
+	user := u._IUserService.NewUser(body.UserName, string(hash), body.CreatedDate, body.IsActive, body.ProfileImageId, body.PersonID)
+
+	userId, err := u._IUserService.CreateUser(user)
 
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -269,7 +262,9 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	_, err := initializers.DB.Exec("update people set first_name = $1, last_name = $2, email = $3, phone_number = $4, country_id = $5, gender_id = $6 where person_id = $7", body.Firstname, body.Lastname, body.Email, body.Phonenumber, body.CountryId, body.GenderId, body.PersonId)
+	person := u._IPersonService.NewPerson(body.PersonId, body.Firstname, body.Lastname, body.GenderId, body.Phonenumber, body.Email, "", body.CountryId)
+
+	err := u._IPersonService.UpdatePerson(person)
 
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
