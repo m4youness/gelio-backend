@@ -96,6 +96,13 @@ func (u *UserController) Register(c *gin.Context) {
 		return
 	}
 
+	_, err := u._IUserService.GetUserWithName(body.UserName)
+
+	if err == nil {
+		c.JSON(400, gin.H{"error": "User already exists"})
+		return
+	}
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
 
 	if err != nil {
